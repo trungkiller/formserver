@@ -101,6 +101,11 @@ public class ItemsService implements ItemsRepository {
 
 	}
 
+	@Override
+	public List<ItemsEntity> findNameItems(String name) {
+		return itemsRepository.findNameItems(name);
+	}
+
 //	@Override
 //	public ItemsEntity findNameItems(String name) {
 //		return itemsRepository.findNameItems(name);

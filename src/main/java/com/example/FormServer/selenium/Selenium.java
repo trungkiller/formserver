@@ -39,6 +39,7 @@ public class Selenium {
 	private String NameStore = null;
 	private String Adress = null;
 	private String LinkUrlStore = null;
+	private String PostCodeString = null;
 	String url = null;
 	private Boolean isDone = true;
 	private Boolean isStop = false;
@@ -202,11 +203,17 @@ public class Selenium {
 					Thread.sleep(2000);
 					LinkUrlStore = driver.getCurrentUrl();
 					WebElement adress = driver.findElement(By.xpath("//span[@class='Text-module_smHeader__3mR_U']"));
+					List<WebElement> EpostCode = loadElements("//span[@class='Text-module_smHeader__3mR_U style-module--addressPart--484b23']");
+
 					Adress = adress.getText();
+					PostCodeString = EpostCode.get((int) (EpostCode.stream().count()-1)).getText();
+					PostCodeString = PostCodeString.replace("-","");
+					PostCodeString =PostCodeString.trim();
 					JSONObject jsonobject = new JSONObject();
 					jsonobject.put("Business Name", NameStore);
 					jsonobject.put("Full Address", Adress);
-					jsonobject.put("Website/URL", LinkUrlStore);
+					jsonobject.put("Source Link", LinkUrlStore);
+					jsonobject.put("PostCode",PostCodeString);
 //               FormController formController = new FormController();
 					formController.writeDataToDB(jsonobject, idForm);
 					driver.get(Page);

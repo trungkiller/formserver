@@ -101,4 +101,9 @@ public class ItemsMetaService implements ItemsMetaRepository {
 	public ItemsMetaEntity findNameItems(int id) {
 		return itemsMetaRepository.findNameItems(id);
 	}
+
+	@Override
+	public ItemsMetaEntity findItemsMeta(int field_id, int item_id) {
+		return itemsMetaRepository.findItemsMeta(field_id, item_id);
+	}
 }

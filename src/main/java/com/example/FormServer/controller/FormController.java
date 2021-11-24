@@ -64,8 +64,8 @@ public class FormController {
 			Optional<FormEntity> formEntity = formService.findById(idform);
 			if (formEntity.get().getName().equals(ConstantVariable.url)) {
 //			Selenium selenium = new Selenium(idform);
-				if (pageStart != null) {
-					if (pageEnd != null) {
+				if (pageStart != "") {
+					if (pageEnd != "") {
 						selenium.StartLoopUntil(ConstantVariable.url + pageStart, ConstantVariable.url + pageEnd,
 								idform);
 					} else {
@@ -154,96 +154,20 @@ public class FormController {
 
 			String name = (String) json.get("Business Name");
 			String address = (String) json.get("Full Address");
-			String urlStore = (String) json.get("Website/URL");
+			String urlStore = (String) json.get("Source Link");
+			String postCode = (String) json.get("PostCode");
 			String phone = (String) json.get("Phone");
 			String email = (String) json.get("Email");
 
 			if (name != null) {
 				List<ItemsEntity> itemCheck = itemsService.findNameItems(name);
-				if (itemCheck.size() != 0) {
-					for (int i = 0; i < itemCheck.size(); i++) {
-						ItemsMetaEntity itemMeta = itemsMetaService.findNameItems(itemCheck.get(i).getId());
-						if (itemMeta == null || !urlStore.equals(itemMeta.getMeta_value())) {
-							ItemsEntity item = new ItemsEntity(name, idform, dtf.format(now), dtf.format(now),
-									RandomKey.getSaltString());
-							itemsService.saveItem(item);
-							addToItemMeta(name, item, address, urlStore, phone, email);
-						}
-					}
-				} else {
+
+				if (checkDuplicate(itemCheck, urlStore)) {
 					ItemsEntity item = new ItemsEntity(name, idform, dtf.format(now), dtf.format(now),
 							RandomKey.getSaltString());
 					itemsService.saveItem(item);
-					addToItemMeta(name, item, address, urlStore, phone, email);
+					addToItemMeta(name, item, address, urlStore, phone, email, postCode);
 				}
-//				item.setName(name);
-//				item.setForm_id(idform);
-//				item.setItem_key(RandomKey.getSaltString());
-//				item.setCreated_at(dtf.format(now));
-//				item.setUpdated_at(dtf.format(now));
-
-//				ItemsMetaEntity item_meta = new ItemsMetaEntity();
-//
-//				try {
-//					itemsService.saveItem(item);
-//				} catch (Exception e) {
-//					System.out.println(e.toString());
-//				}
-//
-//				int idItem = item.getId();
-//
-//				int idName = fieldsService.findIdField("Business Name").getId();
-//
-//				item_meta.setItem_id(idItem);
-//				item_meta.setField_id(idName);
-//				item_meta.setMeta_value(name);
-//				item_meta.setCreated_at(dtf.format(now));
-//
-//				itemsMetaService.saveItemMeta(item_meta);
-//
-//				if (address != null) {
-//					ItemsMetaEntity item_meta_add = new ItemsMetaEntity();
-//					int idAddress = fieldsService.findIdField("Full Address").getId();
-//					item_meta_add.setItem_id(idItem);
-//					item_meta_add.setField_id(idAddress);
-//					item_meta_add.setMeta_value(address);
-//					item_meta_add.setCreated_at(dtf.format(now));
-//
-//					itemsMetaService.saveItemMeta(item_meta_add);
-//				}
-//
-//				if (urlStore != null) {
-//					ItemsMetaEntity item_meta_url = new ItemsMetaEntity();
-//					int idUrlStore = fieldsService.findIdField("Website/URL").getId();
-//					item_meta_url.setItem_id(idItem);
-//					item_meta_url.setField_id(idUrlStore);
-//					item_meta_url.setMeta_value(urlStore);
-//					item_meta_url.setCreated_at(dtf.format(now));
-//
-//					itemsMetaService.saveItemMeta(item_meta_url);
-//				}
-//
-//				if (phone != null) {
-//					ItemsMetaEntity item_meta_phone = new ItemsMetaEntity();
-//					int idPhone = fieldsService.findIdField("Phone").getId();
-//					item_meta_phone.setItem_id(idItem);
-//					item_meta_phone.setField_id(idPhone);
-//					item_meta_phone.setMeta_value(phone);
-//					item_meta_phone.setCreated_at(dtf.format(now));
-//
-//					itemsMetaService.saveItemMeta(item_meta_phone);
-//				}
-//
-//				if (email != null) {
-//					ItemsMetaEntity item_meta_email = new ItemsMetaEntity();
-//					int idEmail = fieldsService.findIdField("Email").getId();
-//					item_meta_email.setItem_id(idItem);
-//					item_meta_email.setField_id(idEmail);
-//					item_meta_email.setMeta_value(email);
-//					item_meta_email.setCreated_at(dtf.format(now));
-//
-//					itemsMetaService.saveItemMeta(item_meta_email);
-//				}
 			}
 
 //			ItemsEntity getItem = itemsService.findNameItems(name);
@@ -256,12 +180,12 @@ public class FormController {
 	}
 
 	public void addToItemMeta(String name, ItemsEntity item, String address, String urlStore, String phone,
-			String email) {
+			String email, String postCode) {
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 		LocalDateTime now = LocalDateTime.now();
-
-		ItemsMetaEntity item_meta = new ItemsMetaEntity();
+//
+//		ItemsMetaEntity item_meta = new ItemsMetaEntity();
 
 //		try {
 //			itemsService.saveItem(item);
@@ -270,58 +194,49 @@ public class FormController {
 //		}
 
 		int idItem = item.getId();
+		String scraper = "a:1:{i:0;s:9:\"Treatwell\";}";
 
-		int idName = fieldsService.findIdField("Business Name").getId();
+		saveItemMeta("Business Name", name, itemsMetaService, idItem);
+		saveItemMeta("Creation Date", dtf.format(now), itemsMetaService, idItem);
+		saveItemMeta("Scraper Source", scraper, itemsMetaService, idItem);
+		saveItemMeta("Full Address", address, itemsMetaService, idItem);
+		saveItemMeta("Source Link", urlStore, itemsMetaService, idItem);
+		saveItemMeta("Phone", phone, itemsMetaService, idItem);
+		saveItemMeta("Email", email, itemsMetaService, idItem);
+		saveItemMeta("Postcode", postCode, itemsMetaService, idItem);
+	}
 
-		item_meta.setItem_id(idItem);
-		item_meta.setField_id(idName);
-		item_meta.setMeta_value(name);
-		item_meta.setCreated_at(dtf.format(now));
+	public void saveItemMeta(String nameColumn, String value, ItemsMetaService itemsMetaService, int idItem) {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+		if (value != null) {
+			ItemsMetaEntity item_entity = new ItemsMetaEntity();
+			int idColumn = fieldsService.findIdField(nameColumn).getId();
+			item_entity.setItem_id(idItem);
+			item_entity.setField_id(idColumn);
+			item_entity.setMeta_value(value);
+			item_entity.setCreated_at(dtf.format(now));
 
-		itemsMetaService.saveItemMeta(item_meta);
-
-		if (address != null) {
-			ItemsMetaEntity item_meta_add = new ItemsMetaEntity();
-			int idAddress = fieldsService.findIdField("Full Address").getId();
-			item_meta_add.setItem_id(idItem);
-			item_meta_add.setField_id(idAddress);
-			item_meta_add.setMeta_value(address);
-			item_meta_add.setCreated_at(dtf.format(now));
-
-			itemsMetaService.saveItemMeta(item_meta_add);
+			itemsMetaService.saveItemMeta(item_entity);
 		}
+	}
 
-		if (urlStore != null) {
-			ItemsMetaEntity item_meta_url = new ItemsMetaEntity();
-			int idUrlStore = fieldsService.findIdField("Website/URL").getId();
-			item_meta_url.setItem_id(idItem);
-			item_meta_url.setField_id(idUrlStore);
-			item_meta_url.setMeta_value(urlStore);
-			item_meta_url.setCreated_at(dtf.format(now));
+	public boolean checkDuplicate(List<ItemsEntity> itemCheck, String urlStore) {
+//		ItemsEntity item = null;
+		if (itemCheck.size() != 0) {
+			for (int i = 0; i < itemCheck.size(); i++) {
+				int idItem = itemCheck.get(i).getId();
+				ItemsMetaEntity itemMeta = itemsMetaService.findNameItems(idItem);
 
-			itemsMetaService.saveItemMeta(item_meta_url);
+				if (itemMeta != null) {
+					if (urlStore.equals(itemMeta.getMeta_value())) {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			}
 		}
-
-		if (phone != null) {
-			ItemsMetaEntity item_meta_phone = new ItemsMetaEntity();
-			int idPhone = fieldsService.findIdField("Phone").getId();
-			item_meta_phone.setItem_id(idItem);
-			item_meta_phone.setField_id(idPhone);
-			item_meta_phone.setMeta_value(phone);
-			item_meta_phone.setCreated_at(dtf.format(now));
-
-			itemsMetaService.saveItemMeta(item_meta_phone);
-		}
-
-		if (email != null) {
-			ItemsMetaEntity item_meta_email = new ItemsMetaEntity();
-			int idEmail = fieldsService.findIdField("Email").getId();
-			item_meta_email.setItem_id(idItem);
-			item_meta_email.setField_id(idEmail);
-			item_meta_email.setMeta_value(email);
-			item_meta_email.setCreated_at(dtf.format(now));
-
-			itemsMetaService.saveItemMeta(item_meta_email);
-		}
+		return true;
 	}
 }

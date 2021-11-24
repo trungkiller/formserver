@@ -11,6 +11,9 @@ import com.example.FormServer.entity.ItemsMetaEntity;
 
 @Repository
 public interface ItemsMetaRepository extends CrudRepository<ItemsMetaEntity, Integer>  {
-	@Query(value = "SELECT * FROM wp_frm_item_metas WHERE field_id = 68 AND item_id = ?1", nativeQuery = true)
+	@Query(value = "SELECT * FROM wp_frm_item_metas WHERE field_id = 69 AND item_id = ?1", nativeQuery = true)
 	public ItemsMetaEntity findNameItems(int id);
+	
+	@Query(value = "SELECT * FROM wp_frm_item_metas WHERE field_id = ?1 AND item_id = ?2", nativeQuery = true)
+	public ItemsMetaEntity findItemsMeta(int field_id, int item_id);
 }

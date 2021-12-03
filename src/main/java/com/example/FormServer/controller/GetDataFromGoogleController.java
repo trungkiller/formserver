@@ -16,7 +16,7 @@ import com.example.FormServer.entity.ItemsEntity;
 import com.example.FormServer.entity.ItemsMetaEntity;
 import com.example.FormServer.finalclass.RandomKey;
 import com.example.FormServer.selenium.ConvertPostCode;
-import com.example.FormServer.selenium.GetDataFormGoogle;
+import com.example.FormServer.selenium.GetDataFromGoogle;
 import com.example.FormServer.service.FieldsService;
 import com.example.FormServer.service.FormService;
 import com.example.FormServer.service.ItemsMetaService;
@@ -39,13 +39,13 @@ public class GetDataFromGoogleController {
 	public ItemsService itemsService;
 
 	@Autowired
-	public GetDataFormGoogle getData;
+	public GetDataFromGoogle getData2;
 
 	@GetMapping("/google")
 	public String getData(@RequestParam("name") String nameStore) {
 		if (nameStore != "") {
 			try {
-				getData.StartSpec(nameStore);
+				getData2.StartSpec(nameStore);
 
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -70,7 +70,7 @@ public class GetDataFromGoogleController {
 		String name = (String) json.get("NameStore");
 		String address = (String) json.get("Address");
 		String source_link = (String) json.get("StoreLinkonMap");
-		String web_url = (String) json.get("Link1");
+		String web_url = (String) json.get("linkCopy");
 		String postCode = ConvertPostCode.checking(address);
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
